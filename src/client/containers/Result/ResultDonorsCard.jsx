@@ -7,7 +7,8 @@ import statesData from '../../data/statesData';
 import StoryCard from '../../components/StoryCards/StoryCard.jsx';
 import ListsCarousel from '../../components/ResultsPage/ListsCarousel.jsx';
 import ResultDonorsList from './ResultDonorsList.jsx';
-import {loadPACinfo,loadBizInfo, loadIndivs} from '../../actions'
+import {loadPACinfo,loadBizInfo, loadIndivs} from '../../actions';
+import { VictoryChart, VictoryAxis, VictoryBar } from 'victory';
 import _ from 'lodash';
 
 
@@ -43,6 +44,35 @@ class ResultDonorsCard extends Component {
                 <StoryCard
                   question={"Who is giving?"}
                   description={"This visualization is calculated by total dollars, not total people."}>
+                  <div style={{width: 50 + '%'}}>
+                    <VictoryChart>
+                      <VictoryAxis
+                        orientation="bottom"
+                        style={{
+                          ticks: {stroke: "transparent"},
+                          axis: {stroke: "transparent"},
+                          tickLabels: {fontSize: 16}
+                        }}
+                      />
+                      <VictoryAxis dependentAxis
+                          style={{
+                          axis: {stroke: "transparent"},
+                          ticks: {stroke: "transparent"}
+                          }}
+                            />
+
+                      <VictoryBar
+                        style={{
+                          data: {width: 150},
+                        }}
+                        data={[
+                          {id: "Individual", value: indivsTotal, fill: "teal"}, {id: "Business", value: businessTotal, fill: "#C2645E", }, {id: "PAC", value: pacTotal, fill: "#64BCBA" }
+                        ]}
+                        x={"id"}
+                        y={ (data) => (data.value)}
+                        />
+                    </VictoryChart>
+                  </div>
                   <ListsCarousel>
                     <CarouselItem >
                     <ResultDonorsList donorType={"Top Individual Donors"} donors={individualDonors}></ResultDonorsList>
