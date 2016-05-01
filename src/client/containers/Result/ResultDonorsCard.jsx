@@ -9,7 +9,8 @@ import ListsCarousel from '../../components/ResultsPage/ListsCarousel.jsx';
 import ResultDonorsList from './ResultDonorsList.jsx';
 import {loadPACinfo,loadBizInfo, loadIndivs} from '../../actions'
 import _ from 'lodash';
-import { VictoryChart, VictoryAxis, VictoryBar } from 'victory';
+import ReactFauxDOM from 'react-faux-dom';
+
 
 function loadData(props) {
   const { filer_id } = props.params;
@@ -28,6 +29,7 @@ class ResultDonorsCard extends Component {
       loadData(this.props);
     }
 
+
     render() {
       const {pacContributions,businessContributions, indivContributions} = this.props;
       let individualDonors = _.values(indivContributions);
@@ -38,7 +40,75 @@ class ResultDonorsCard extends Component {
       let businessTotal = businessDonors.map(d => d.grandTotal).reduce((a,b)=> {return a+b},0)
       let pacTotal = pacDonors.map(d => d.grandTotal).reduce((a,b)=> {return a+b},0)
 
-      let barData = [{"Source": "Individual", "Total": indivsTotal}, {"Source": "Business", "Total": businessDonors}, {"Source": "PAC", "Total": pacTotal}]
+      var divStyle = {height: 300}
+
+      var faux = new ReactFauxDOM.createElement('div', divStyle);
+
+      let barData = [{bookType: "Individual", total: indivsTotal}, {bookType: "Business", total: businessTotal}, {bookType: "PAC", total: pacTotal}]
+
+      var data = barData.map((item) => {
+        return {
+          bookType: item.bookType,
+          total: item.total
+        }
+      })
+
+      var margin = {top:20, right:20, bottom:20, left:20};
+
+      var h = 250 - margin.top - margin.bottom;
+      var w = 700 - margin.left - margin.right;
+
+      var x = d3.scale.ordinal().rangeRoundBands([0, w], .05);
+
+      var y = d3.scale.linear().range([h, 0]);
+
+      x.domain(data.map(function(d) { return d.bookType; }));
+      y.domain([0, d3.max(data, function(d) { return d.total; })]);
+
+      var colorScale = d3.scale.category20c()
+       .domain([0, 1, data.length-1, data.length])
+
+
+      var xAxis = d3.svg.axis()
+           .scale(x)
+           .orient("bottom")
+
+      var yAxis = d3.svg.axis()
+           .scale(y)
+           .orient("left")
+           .ticks(10);
+
+      var svg = d3.select(faux).append("svg")
+      .attr('width', w + margin.left + margin.right)
+      .attr('height', h + margin.top + margin.bottom)
+      .append("g")
+      .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+      svg.append("g")
+     .attr("class", "x axis")
+     .attr("transform", "translate(0," + h + ")")
+     .style({'stroke-width': '0px'})
+     .call(xAxis)
+     .selectAll("text")
+       .style("text-anchor", "end")
+       .attr("dx,")
+
+
+    svg.selectAll('rect')
+      .data(data)
+      .enter()
+      .append('rect')
+      .attr('class', 'bar')
+      .attr("fill", function(data, index){
+          return colorScale(index)
+        })
+      .attr("x", function(d) { return x(d.bookType)
+        })
+      .attr("width", x.rangeBand())
+      .attr("y", function(d) { return y(d.total)
+        })
+      .attr("height", function(d) { return h - y(d.total)
+        })
 
 
       console.log('ind ',indivsTotal, 'bus ',businessTotal, 'pac ',pacTotal);
@@ -47,33 +117,9 @@ class ResultDonorsCard extends Component {
                 <StoryCard
                   question={"Who is giving?"}
                   description={"This visualization is calculated by total dollars, not total people."}>
-                  <VictoryChart>
-                    <VictoryAxis
-                      orientation="bottom"
-                      style={{
-                        ticks: {stroke: "transparent"},
-                        axis: {stroke: "transparent"},
-                        tickLabels: {fontSize: 16}
-                      }}
-                    />
-                  <VictoryAxis dependentAxis
-                      style={{
-                      axis: {stroke: "transparent"},
-                      ticks: {stroke: "transparent"}
-                      }}
-                        />
-
-                    <VictoryBar
-                      style={{
-                        data: {width: 150},
-                      }}
-                      data={[
-                        {id: "Individual", value: indivsTotal, fill: "teal"}, {id: "Business", value: businessTotal, fill: "#C2645E", }, {id: "PAC", value: pacTotal, fill: "#64BCBA" }
-                      ]}
-                      x={"id"}
-                      y={ (data) => (data.value)}
-                      />
-                  </VictoryChart>
+                  <div>
+                    {faux.toReact()}
+                  </div>
                   <ListsCarousel>
                     <CarouselItem>
                     <ResultDonorsList donorType={"Top Individual Donors"} donors={individualDonors}></ResultDonorsList>
