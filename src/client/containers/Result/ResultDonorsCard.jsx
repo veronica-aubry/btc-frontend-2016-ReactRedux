@@ -7,10 +7,9 @@ import statesData from '../../data/statesData';
 import StoryCard from '../../components/StoryCards/StoryCard.jsx';
 import ListsCarousel from '../../components/ResultsPage/ListsCarousel.jsx';
 import ResultDonorsList from './ResultDonorsList.jsx';
-import {loadPACinfo,loadBizInfo, loadIndivs} from '../../actions';
-import { VictoryChart, VictoryAxis, VictoryBar } from 'victory';
+import {loadPACinfo,loadBizInfo, loadIndivs} from '../../actions'
 import _ from 'lodash';
-
+import { VictoryChart, VictoryAxis, VictoryBar } from 'victory';
 
 function loadData(props) {
   const { filer_id } = props.params;
@@ -39,42 +38,44 @@ class ResultDonorsCard extends Component {
       let businessTotal = businessDonors.map(d => d.grandTotal).reduce((a,b)=> {return a+b},0)
       let pacTotal = pacDonors.map(d => d.grandTotal).reduce((a,b)=> {return a+b},0)
 
+      let barData = [{"Source": "Individual", "Total": indivsTotal}, {"Source": "Business", "Total": businessDonors}, {"Source": "PAC", "Total": pacTotal}]
+
+
       console.log('ind ',indivsTotal, 'bus ',businessTotal, 'pac ',pacTotal);
+
         return (<div>
                 <StoryCard
                   question={"Who is giving?"}
                   description={"This visualization is calculated by total dollars, not total people."}>
-                  <div style={{width: 50 + '%'}}>
-                    <VictoryChart>
-                      <VictoryAxis
-                        orientation="bottom"
-                        style={{
-                          ticks: {stroke: "transparent"},
-                          axis: {stroke: "transparent"},
-                          tickLabels: {fontSize: 16}
-                        }}
-                      />
-                      <VictoryAxis dependentAxis
-                          style={{
-                          axis: {stroke: "transparent"},
-                          ticks: {stroke: "transparent"}
-                          }}
-                            />
-
-                      <VictoryBar
-                        style={{
-                          data: {width: 150},
-                        }}
-                        data={[
-                          {id: "Individual", value: indivsTotal, fill: "teal"}, {id: "Business", value: businessTotal, fill: "#C2645E", }, {id: "PAC", value: pacTotal, fill: "#64BCBA" }
-                        ]}
-                        x={"id"}
-                        y={ (data) => (data.value)}
+                  <VictoryChart>
+                    <VictoryAxis
+                      orientation="bottom"
+                      style={{
+                        ticks: {stroke: "transparent"},
+                        axis: {stroke: "transparent"},
+                        tickLabels: {fontSize: 16}
+                      }}
+                    />
+                  <VictoryAxis dependentAxis
+                      style={{
+                      axis: {stroke: "transparent"},
+                      ticks: {stroke: "transparent"}
+                      }}
                         />
-                    </VictoryChart>
-                  </div>
+
+                    <VictoryBar
+                      style={{
+                        data: {width: 150},
+                      }}
+                      data={[
+                        {id: "Individual", value: indivsTotal, fill: "teal"}, {id: "Business", value: businessTotal, fill: "#C2645E", }, {id: "PAC", value: pacTotal, fill: "#64BCBA" }
+                      ]}
+                      x={"id"}
+                      y={ (data) => (data.value)}
+                      />
+                  </VictoryChart>
                   <ListsCarousel>
-                    <CarouselItem >
+                    <CarouselItem>
                     <ResultDonorsList donorType={"Top Individual Donors"} donors={individualDonors}></ResultDonorsList>
                     <ResultDonorsList donorType={"Top Business Donors"} donors={businessDonors}></ResultDonorsList>
                     </CarouselItem>
